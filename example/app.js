@@ -2,6 +2,9 @@
  * Module dependencies.
  */
 
+// allow coffee files to be used directly
+require('coffee-script');
+
 var express = require('express');
 var routes = require('./routes');
 var http = require('http');

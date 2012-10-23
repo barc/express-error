@@ -1,10 +1,10 @@
 FS = require("fs")
 HOME = process.env.HOME
 Path = require("path")
-color = (s) -> s
-utils = require("./utils")
-env = process.env.NODE_ENV || "development"
+Utils = require("./utils")
 
+env = process.env.NODE_ENV || "development"
+color = (s) -> s
 
 ##
 # Align code to left on first non-whitespace
@@ -12,15 +12,13 @@ alignLeft = (lines) ->
   result = []
   left = Number.MAX_VALUE
   for line in lines
-    line.code = utils.tabToSpaces(line.code)
+    line.code = Utils.tabToSpaces(line.code)
     for i in [0...line.code.length]
       if line.code[i] != " "
         left = Math.min(left, i)
 
   for line in lines
     line.code = line.code.slice(left)
-
-
 
 
 ###
@@ -165,7 +163,7 @@ formatText = (frames) ->
     result += frame.frame + "\n"
     if frame.code?.length > 0
       for line in frame.code
-        result += "        #{utils.padLeft(line.linenum.toString(), 4)}: #{line.code}\n"
+        result += "        #{Utils.padLeft(line.linenum.toString(), 4)}: #{line.code}\n"
   result
 
 
@@ -181,7 +179,7 @@ formatHtml = (frames) ->
       for line in frame.code
         attr = if line.isErrorLine then "class='error-line'" else ""
         result += "  <li #{attr}>"
-        result += "<pre>" + utils.padLeft(line.linenum.toString(), 4) + ": " + htmlEscape(line.code) + "</pre>"
+        result += "<pre>" + Utils.padLeft(line.linenum.toString(), 4) + ": " + htmlEscape(line.code) + "</pre>"
         result += "  </li>"
       result += "  </ul>"
     result += "</li>"

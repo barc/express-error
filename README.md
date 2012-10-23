@@ -1,8 +1,9 @@
 # express-error
 
-Displays source code in express' error stack for JavaScript and CoffeeScript.
+Enhance express 3 error handler which displays source code within error stack for
+JavaScript and CoffeeScript.
 
-Express-error is open source project from [Barc](http://barc.com), instant real-time forum on any website.
+Express-error is an open source project from [Barc](http://barc.com), instant real-time forum on any website.
 
 ## Usage
 
