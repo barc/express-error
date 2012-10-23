@@ -1,0 +1,19 @@
+PATH=`pwd`/node_modules/.bin:$PATH
+
+#. Builds by compiling source files.
+build() {
+    coffee -c -b -o . src
+}
+
+#. Cleans directories
+clean() {
+    rm -rf lib
+    rm -f index.js
+}
+
+#. Fetches xregexp.js
+update_xregexp() {
+    cd vendor
+    rm -f xregexp.js
+    wget -N http://cdnjs.cloudflare.com/ajax/libs/xregexp/2.0.0/xregexp.js
+}
