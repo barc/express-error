@@ -3,8 +3,7 @@
 Enhanced express 3 error handler which displays source code within error stack for
 JavaScript and CoffeeScript.
 
-Express-error is an open source project from [Barc](http://barc.com),
-instant real-time forum on any website.
+Open sourced by [Barc](http://barc.com), instant real-time forum on any website.
 
 ## Usage
 
@@ -12,9 +11,20 @@ instant real-time forum on any website.
 var expressError = require('express-error');
 
 app.configure('development', function() {
-  # show 3 lines before and after the error line which is helpful for CoffeeScript
-  app.use(expressError.express3({contextLinesCount: 3}));
+  # Show 3 lines before and after the error line which is helpful for CoffeeScript.
+  # Also handle uncaught exception.
+  app.use(expressError.express3({contextLinesCount: 3, handleUncaughtException: true}));
 });
+```
+
+## Options
+
+```
+{
+    contextLinesCount: Integer,         // Number of lines to insert before and after the error line.
+    handleUncaughtException: Boolean,   // Whether to handle uncaught exception.
+    title: String                       // The title for HTML error page
+}
 ```
 
 ## Screenshot

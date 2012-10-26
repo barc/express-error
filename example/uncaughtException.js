@@ -35,3 +35,9 @@ app.get('/test', errorPage.index);
 http.createServer(app).listen(app.get('port'), function() {
   console.log("Express server listening on port " + app.get('port'));
 });
+
+// create uncaught exception
+setTimeout(function() {
+  var oO = 3 / missing;
+}, 100);
+

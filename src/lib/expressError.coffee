@@ -4,7 +4,7 @@ Path = require("path")
 Utils = require("./utils")
 
 env = process.env.NODE_ENV || "development"
-color = (s) -> s
+
 
 ##
 # Align code to left on first non-whitespace
@@ -20,36 +20,46 @@ alignLeft = (lines) ->
   for line in lines
     line.code = line.code.slice(left)
 
+##
+# HTML escapes a string
+#
+htmlEscape = (s) ->
+  String(s)
+    .replace(/&(?!\w+;)/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
 
-###
-Gets original source line and injects into stack.
 
-@param {Array} lines Array of lines from stack.
-@param {String} fileName The file being tested.
-
-
-@returns [
-  {
-    frame: 'stack line', code: [
-      { linenum: 123, code: 'compiled line'},
-      { linenum: 124, code: 'compiled line'},
-      { linenum: 125, code: 'compiled line', isErrorLine: true},
-      { linenum: 126, code: 'compiled line'},
-      { linenum: 127, code: 'compiled line'},
-    ]
-  },
-  {
-    frame: 'stack line', code: [
-      { linenum: 123, code: 'compiled line'},
-      { linenum: 124, code: 'compiled line'},
-      { linenum: 125, code: 'compiled line', isErrorLine: true},
-      { linenum: 126, code: 'compiled line'},
-      { linenum: 127, code: 'compiled line'},
-    ]
-  }
-]
-###
-injectSourceLines = (lines, fileName, contextLinesCount) ->
+##
+# Gets original source line and injects into stack.
+#
+# @param {Array} lines Array of lines from stack.
+# @param {Integer} contextLinesCount The number of context lines to insert
+#                                    before and after the error line.
+#
+# @returns [
+#   {
+#     frame: 'stack line', code: [
+#       { linenum: 123, code: 'compiled line'},
+#       { linenum: 124, code: 'compiled line'},
+#       { linenum: 125, code: 'compiled line', isErrorLine: true},
+#       { linenum: 126, code: 'compiled line'},
+#       { linenum: 127, code: 'compiled line'},
+#     ]
+#   },
+#   {
+#     frame: 'stack line', code: [
+#       { linenum: 123, code: 'compiled line'},
+#       { linenum: 124, code: 'compiled line'},
+#       { linenum: 125, code: 'compiled line', isErrorLine: true},
+#       { linenum: 126, code: 'compiled line'},
+#       { linenum: 127, code: 'compiled line'},
+#     ]
+#   }
+# ]
+#
+injectSourceLines = (lines, contextLinesCount) ->
   newLines = []
   collectSource = true
   cache = {}
@@ -100,24 +110,20 @@ injectSourceLines = (lines, fileName, contextLinesCount) ->
           alignLeft lineObj.code
 
         try
-          if ext is ".js"
-            text = cache[codeFile]
-            unless text
-              text = FS.readFileSync(codeFile, "utf8")
+          text = cache[codeFile]
+          unless text
+            text = FS.readFileSync(codeFile, "utf8")
+            if ext is ".js"
               cache[codeFile] = text
-            pushLine text
-          else if ext is ".coffee"
-            text = cache[codeFile]
-            unless text
+            else if ext is ".coffee"
               coffee = require("coffee-script")
-              buffer = FS.readFileSync(codeFile, "utf8")
-              text = coffee.compile(buffer, {})
+              text = coffee.compile(text, {})
               cache[codeFile] = text
-            pushLine text
+
+          pushLine text
+
         catch err
           console.log err.stack
-
-      # swallow any error since we should always see the stack
 
     i++
   newLines
@@ -131,26 +137,14 @@ line from current test module.
 @param {Object} mod The test module.
 @returns {String} Returns the modified stack trace.
 ###
-betterStack = (stack, contextLinesCount, fileName='foo') ->
+betterStack = (stack, contextLinesCount) ->
   lines = stack.split("\n")
   result = []
-  i = 0
 
-  while i < lines.length
-    line = lines[i]
-    if i is 0
-      line = "  " + line
-    else
-      # emphasize lines that are part of `filename
-      if line.indexOf(fileName) >= 0
-        #line = line.replace('at', color('⇢ ', 'magenta+b'));
-        line = color(line, "white+b")
-      else
-        # deemphasize lines we don't care about
-        line = color(line, "black+b")  if line.indexOf(HOME) < 0
+  for line in lines
     result.push line.replace(HOME, "~")
-    i += 1
-  result = injectSourceLines(result, fileName, contextLinesCount)
+
+  injectSourceLines result, contextLinesCount
 
 
 ##
@@ -187,15 +181,12 @@ formatHtml = (frames) ->
 
 
 ##
-# Handles uncaught exceptions and display them on the console,
-# NOT through the web server.
+# Handles uncaught exceptions and display them on the console. Does not send to
+# http client.
 #
-handleUncaughtExceptions = ->
+handleUncaughtExceptions = (contextLinesCount) ->
   process.on "uncaughtException", (err) ->
-    message = err
-    stack = ""
-    if (err.stack)
-      stack = formatText(betterStack(err.stack, contextLinesCount))
+    stack = if err.stack then formatText(betterStack(err.stack, contextLinesCount)) else ""
     console.error "Uncaught exception", "#{err.message}\n#{stack}"
 
 
@@ -209,10 +200,11 @@ handleUncaughtExceptions = ->
 exports.express3 = (options={}) ->
   showStack = options.showStack || false
   dumpExceptions = options.dumpExceptions || false
-  enableUncaughtExceptions = options.enableUncaughtExceptions || false
+  handleUncaughtException = options.handleUncaughtException || false
   contextLinesCount = options.contextLinesCount || 0
+  title = options.title || "express-error"
 
-  handleUncaughtExceptions() if enableUncaughtExceptions
+  handleUncaughtExceptions(contextLinesCount) if handleUncaughtException
 
   return (err, req, res, next) ->
     res.statusCode = err.status  if err.status
@@ -227,7 +219,7 @@ exports.express3 = (options={}) ->
       FS.readFile __dirname + "/../public/style.css", "utf8", (e, style) ->
         FS.readFile __dirname + "/../public/error.html", "utf8", (e, html) ->
           stack = formatHtml(stack)
-          html = html.replace("{style}", style).replace("{stack}", stack).replace("{title}", exports.title).replace("{statusCode}", res.statusCode).replace(/\{error\}/g, htmlEscape(err.toString()))
+          html = html.replace("{style}", style).replace("{stack}", stack).replace("{title}", title).replace("{statusCode}", res.statusCode).replace(/\{error\}/g, htmlEscape(err.toString()))
           res.setHeader "Content-Type", "text/html; charset=utf-8"
           res.end html
 
@@ -251,13 +243,9 @@ exports.express3 = (options={}) ->
       res.end stack
 
 
-htmlEscape = (s) ->
-  String(s)
-    .replace(/&(?!\w+;)/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
+##
+# Express 2 signature.
+#
+exports.express2 = exports.express3
 
-
-exports.title = "express-error"
 
