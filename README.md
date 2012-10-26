@@ -11,8 +11,6 @@ Open sourced by [Barc](http://barc.com), instant real-time forum on any website.
 var expressError = require('express-error');
 
 app.configure('development', function() {
-  # Show 3 lines before and after the error line which is helpful for CoffeeScript.
-  # Also handle uncaught exception.
   app.use(expressError.express3({contextLinesCount: 3, handleUncaughtException: true}));
 });
 ```
