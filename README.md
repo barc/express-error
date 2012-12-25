@@ -7,7 +7,7 @@ Open sourced by [Barc](http://barc.com), instant real-time forum on any website.
 
 ## Usage
 
-```
+```javascript
 var expressError = require('express-error');
 
 app.configure('development', function() {
@@ -17,7 +17,7 @@ app.configure('development', function() {
 
 ## Options
 
-```
+```javascript
 {
     contextLinesCount: Integer,         // Number of lines to insert before and after the error line.
     handleUncaughtException: Boolean,   // Whether to handle uncaught exception.
