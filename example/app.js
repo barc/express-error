@@ -30,7 +30,22 @@ app.configure('development', function() {
 });
 
 app.get('/', routes.index);
-app.get('/test', errorPage.index);
+app.get('/error', errorPage.index);
+app.get('/number', function(req, res, next) {
+  next(404);
+});
+app.get('/string', function(req, res, next) {
+  next("some string explaining error");
+});
+app.get('/null', function(req, res, next) {
+  next(null);
+});
+app.get('/undefined', function(req, res, next) {
+  next(undefined);
+});
+app.get('/object', function(req, res, next) {
+  next({some: 'a', undefinedprop: undefined, nullprop: null});
+});
 
 http.createServer(app).listen(app.get('port'), function() {
   console.log("Express server listening on port " + app.get('port'));

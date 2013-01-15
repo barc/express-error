@@ -17,3 +17,9 @@ update_xregexp() {
     rm -f xregexp.js
     wget -N http://cdnjs.cloudflare.com/ajax/libs/xregexp/2.0.0/xregexp.js
 }
+
+
+run() {
+    build
+    node example/app
+}

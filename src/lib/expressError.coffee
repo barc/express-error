@@ -64,9 +64,7 @@ injectSourceLines = (lines, contextLinesCount) ->
   collectSource = true
   cache = {}
 
-  # start at line after error message
   i = 1
-
   while i < lines.length
     # push error statement
     lineObj = {frame: lines[i], code: []}
@@ -150,7 +148,7 @@ betterStack = (stack, contextLinesCount) ->
 ##
 #
 formatText = (frames) ->
-  return "" unless frames
+  return "" unless Array.isArray(frames) and frames.length > 0
 
   result = ""
   for frame in frames
@@ -162,7 +160,7 @@ formatText = (frames) ->
 
 
 formatHtml = (frames) ->
-  return "" unless frames
+  return "" unless Array.isArray(frames) and frames.length > 0
 
   result = "<ul>"
   for frame in frames
@@ -211,37 +209,45 @@ exports.express3 = (options={}) ->
     res.statusCode = 500  if res.statusCode < 400
     accept = req.headers.accept or ""
 
-    stack = betterStack(err.stack, contextLinesCount)
-    console.error formatText(stack) if env is "development"
+    if err instanceof Error
+      newerr =
+        message: err.message
+        stack: betterStack(err.stack, contextLinesCount)
+    else if err
+      if typeof err is 'string'
+        newerr =
+          message: err
+          stack: null
+      else
+        message = JSON.stringify(err)
+        newerr =
+          message: message
+          stack: null
+    else
+      message = "(empty error)"
+      newerr =
+        message: message
+        stack: null
+
+    console.error formatText(newerr.stack) if env is "development"
 
     # html
     if ~accept.indexOf("html")
       FS.readFile __dirname + "/../public/style.css", "utf8", (e, style) ->
         FS.readFile __dirname + "/../public/error.html", "utf8", (e, html) ->
-          stack = formatHtml(stack)
-          html = html.replace("{style}", style).replace("{stack}", stack).replace("{title}", title).replace("{statusCode}", res.statusCode).replace(/\{error\}/g, htmlEscape(err.toString()))
+          stack = formatHtml(newerr.stack)
+          html = html.replace("{style}", style).replace("{stack}", stack).replace("{title}", title).replace("{statusCode}", res.statusCode).replace(/\{error\}/g, htmlEscape(newerr.message))
           res.setHeader "Content-Type", "text/html; charset=utf-8"
           res.end html
 
     # json
     else if ~accept.indexOf("json")
-      error =
-        message: err.message
-        stack: stack
-
-      for prop of err
-        error[prop] = err[prop]
-      json = JSON.stringify(error: error)
-      res.setHeader "Content-Type", "application/json"
-      res.end json
+      res.json newerr
 
     # plain text
     else
-      res.writeHead res.statusCode,
-        "Content-Type": "text/plain"
-
-      res.end stack
-
+      res.setHeader "Content-Type", "text/plain"
+      res.end JSON.stringify(newerr)
 
 ##
 # Express 2 signature.
