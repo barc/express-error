@@ -205,6 +205,18 @@ exports.express3 = (options={}) ->
   handleUncaughtExceptions(contextLinesCount) if handleUncaughtException
 
   return (err, req, res, next) ->
+    if typeof err is "number"
+      status = err
+      name = http.STATUS_CODES[status]
+      err = new Error(name)
+      err.name = name
+      err.status = status
+    else if typeof err is "string"
+      name = err
+      err = new Error(name)
+      err.name = name
+      err.status = 500
+
     res.statusCode = err.status  if err.status
     res.statusCode = 500  if res.statusCode < 400
     accept = req.headers.accept or ""
