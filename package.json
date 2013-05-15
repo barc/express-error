@@ -1,6 +1,6 @@
 {
   "name": "express-error",
-  "version": "0.0.4-pre",
+  "version": "0.0.5-pre",
   "description": "Display source code in express' error stack for JavaScript or CoffeeScript",
   "keywords": "express3 error stack coffee-script coffee",
   "main": "index.js",
@@ -11,10 +11,10 @@
   "author": "Mario Gutierrez (mario@mgutz.com)",
   "license": "MIT",
   "dependencies": {
-    "coffee-script": "~1.3.3"
+    "coffee-script": "~1.6.2"
   },
   "devDependencies": {
-    "express": "~3.0.0",
+    "express": "~3.2.4",
     "jade": "*"
   }
 }

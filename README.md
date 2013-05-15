@@ -29,6 +29,13 @@ app.configure('development', function() {
 
 ![screenshot](https://github.com/barc/express-error/raw/master/img/stack.png)
 
+## To run the example and see error
+
+    npm install -d
+    node example/app.js
+
+    # browse http://localhost:3000/error
+
 ## License
 
 The MIT License (MIT) Copyright (c) 2012 Barc, Inc.
