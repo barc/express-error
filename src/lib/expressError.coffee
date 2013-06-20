@@ -136,8 +136,9 @@ line from current test module.
 @returns {String} Returns the modified stack trace.
 ###
 betterStack = (stack, contextLinesCount) ->
+  return "" unless stack
+
   lines = stack.split("\n")
-  result = []
 
   for line in lines
     result.push line.replace(HOME, "~")
@@ -265,5 +266,4 @@ exports.express3 = (options={}) ->
 # Express 2 signature.
 #
 exports.express2 = exports.express3
-
 
