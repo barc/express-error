@@ -137,6 +137,7 @@ line from current test module.
 ###
 betterStack = (stack, contextLinesCount) ->
   return "" unless stack
+  result = []
 
   lines = stack.split("\n")
 
