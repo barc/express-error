@@ -2,7 +2,7 @@
   "name": "express-error",
   "version": "0.0.5",
   "description": "Display source code in express' error stack for JavaScript or CoffeeScript",
-  "keywords": "express3 error stack coffee-script coffee",
+  "keywords": ["express3", "error", "coffee-script", "coffee"],
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
