@@ -1,8 +1,10 @@
 FS = require("fs")
 Path = require("path")
 Utils = require("./utils")
+http = require("http")
 env = process.env.NODE_ENV || "development"
 isWindows = require('os').platform().indexOf('win') == 0
+
 
 if isWindows
   HOME = process.env.USERPROFILE
