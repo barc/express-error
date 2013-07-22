@@ -1,10 +1,13 @@
 FS = require("fs")
-HOME = process.env.HOME
 Path = require("path")
 Utils = require("./utils")
-
 env = process.env.NODE_ENV || "development"
+isWindows = require('os').platform().indexOf('win') == 0
 
+if isWindows
+  HOME = process.env.USERPROFILE
+else
+  HOME = process.env.HOME
 
 ##
 # Align code to left on first non-whitespace
