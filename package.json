@@ -1,6 +1,6 @@
 {
   "name": "express-error",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Display source code in express' error stack for JavaScript or CoffeeScript",
   "keywords": ["express3", "error", "coffee-script", "coffee"],
   "main": "index.js",

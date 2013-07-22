@@ -3,13 +3,9 @@ Path = require("path")
 Utils = require("./utils")
 http = require("http")
 env = process.env.NODE_ENV || "development"
-isWindows = require('os').platform().indexOf('win') == 0
+HOME = process.env.HOME || process.env.USERPROFILE
+CWD = process.cwd()
 
-
-if isWindows
-  HOME = process.env.USERPROFILE
-else
-  HOME = process.env.HOME
 
 ##
 # Align code to left on first non-whitespace
@@ -77,13 +73,20 @@ injectSourceLines = (lines, contextLinesCount) ->
 
     if collectSource
       #re = new XRegExp(/(~[^:]+):(\d+):(\d+)/)
-      re = /(~[^:]+):(\d+):(\d+)/
+      if lines[i].indexOf('(') > 0
+        re = /\((.*):(\d+):(\d+)\)/
+      else
+        re = /at (.*):(\d+):(\d+)/
       matches = re.exec(lines[i])
 
       # parse the error statement, getting line, code file
       if matches
+        console.log "MATCH>>", matches
         codeFile = matches[1]
-        codeFile = codeFile.replace("~", HOME)
+
+        if codeFile.indexOf(HOME) is 0
+          codeFile = codeFile.replace("~", HOME)
+
         linenum = parseInt(matches[2])
         col = matches[3]
         ext = Path.extname(codeFile)
@@ -147,7 +150,12 @@ betterStack = (stack, contextLinesCount) ->
   lines = stack.split("\n")
 
   for line in lines
-    result.push line.replace(HOME, "~")
+    if line.indexOf(CWD) > 0
+      result.push line.replace(CWD, ".")
+    else if line.indexOf(HOME) > 0
+      result.push line.replace(HOME, "~")
+    else
+      result.push line
 
   injectSourceLines result, contextLinesCount
 
